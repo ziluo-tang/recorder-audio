@@ -21,8 +21,8 @@ class Recorder extends Component{
                     device: "web",
                     source: "",
                     target: values.deviceId, //对讲目标设备id，必填
-                    sampleRateInHz: "48K",
-                    audioFormat: "AAC",
+                    sampleRateInHz: "4",
+                    audioFormat: "3",
                     fileFormat: ""
                 });
                 this.socket = new TWebsocket({

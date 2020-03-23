@@ -5,7 +5,7 @@ export default class webSocket {
         this.reconnectCount = 0;
         this.socket = null;
         this.taskRemindInterval = null;
-        this.isSucces=true;
+        this.isSucces = true;
     }
     connection = () => {
         let { socketUrl, timeout = 0 } = this.param;
