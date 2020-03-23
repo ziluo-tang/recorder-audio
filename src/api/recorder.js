@@ -12,11 +12,11 @@ export async function connect(param) {
         redirect: 'follow',
         referrer: 'no-referrer'
     });
-    const reslut = await response.json();
+    const result = await response.json();
     if (!response.ok) {
-        message.error(reslut.message || '网络错误');
+        message.error(result.message || '网络错误');
     }
-    return reslut.data;
+    return result.data;
 }
 
 export async function disconnect(param) {
@@ -32,11 +32,11 @@ export async function disconnect(param) {
         redirect: 'follow',
         referrer: 'no-referrer'
     });
-    const reslut = await response.json();
+    const result = await response.json();
     if (!response.ok) {
-        message.error(reslut.message || '网络错误');
+        message.error(result.message || '网络错误');
     }
-    return reslut.data;
+    return result.data;
 }
 
 export async function broadcast(param) {
