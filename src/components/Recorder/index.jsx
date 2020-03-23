@@ -17,17 +17,20 @@ class Recorder extends Component{
         this.props.form.validateFields((err, values) => {
             if (!err) {
                 this.setState({status: 1});
-                const {session, receive_rtmp} = connect({
+                connect({
                     device: "web",
                     source: "",
                     target: values.deviceId, //对讲目标设备id，必填
                     sampleRateInHz: "4",
                     audioFormat: "3",
                     fileFormat: ""
+                }).then(data => {
+                    this.session = data.session;
+                    this.socketUrl = data.receive_rtmp
                 });
                 this.socket = new TWebsocket({
-                    socketUrl: receive_rtmp,
-                    socketOpen: this._socketOpen.bind(this, session),
+                    socketUrl: this.socketUrl,
+                    socketOpen: this._socketOpen.bind(this),
                     socketMessage: null,
                     socketClose: this._socketDisconnect.bind(this),
                     socketError: null
@@ -36,7 +39,7 @@ class Recorder extends Component{
         });
     }
     _socketOpen = session => {
-        this.session = session;
+        this.setState({status: 2});
         this.recorder = new TRecorder();
         this.recorder.start();
         this.recorder.ondataavailable = event => {
