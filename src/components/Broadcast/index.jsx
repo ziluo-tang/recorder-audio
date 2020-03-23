@@ -11,31 +11,6 @@ class Broadcast extends Component{
         this.state = {
             status: 0
         };
-        // const { send_rtmp, session } = start(
-        //     {
-        //         source: "",
-        //         target: "",
-        //         device :"web",
-        //         sampleRateInHz: "44100Hz",
-        //         audioFormat: "ENCODING_PCM_16BIT",
-        //         fileFormat: "AAC"
-        //     }  
-        // );
-        // this.session = session;
-        // this.ws = this.initWebSocket(send_rtmp);
-    }
-    componentDidMount() {
-        this.recorder = new TRecorder(this.audioRef.current);
-    }
-    componentWillUnmount() {
-        // this.ws.close();
-    }
-    initWebSocket = url => {
-        if ("WebSocket" in window){
-            return new WebSocket(url);
-        }else{
-            message.info('您的浏览器不支持websocket');
-        }
     }
     add = e => {
         const { form } = this.props;
@@ -52,8 +27,22 @@ class Broadcast extends Component{
           keys: keys.filter(key => key !== k),
         });
     }
-    recorderHandle = () => {
-        this.recorder.start();
+    connectHandle = () => {
+        this.props.form.validateFields((err, values) => {
+            if (!err) {
+                const targets = Object.values(values);
+                const { send_rtmp, session} = broadcast(
+                    {
+                        source: "",
+                        targets: targets,
+                        device: "web",
+                        sampleRateInHz: "44100Hz",
+                        audioFormat: "ENCODING_PCM_16BIT",
+                        fileFormat: "AAC"
+                    }
+                );
+            }
+        });
     }
     broadcastHandle = () => {
         this.recorder.stop();
@@ -83,6 +72,9 @@ class Broadcast extends Component{
         }else if(status===2){
             return '对讲中';
         }
+    }
+    componentWillUnmount() {
+        // this.ws.close();
     }
     render() {
         const { getFieldDecorator, getFieldValue } = this.props.form;

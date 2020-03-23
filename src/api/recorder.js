@@ -16,7 +16,7 @@ export async function connect(param) {
     if (!response.ok) {
         message.error(reslut.message || '网络错误');
     }
-    return reslut;
+    return reslut.data;
 }
 
 export async function disconnect(param) {
@@ -36,7 +36,7 @@ export async function disconnect(param) {
     if (!response.ok) {
         message.error(reslut.message || '网络错误');
     }
-    return reslut;
+    return reslut.data;
 }
 
 export async function broadcast(param) {

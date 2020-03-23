@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { Form, Input, Button, message } from 'antd';
-import io from "socket.io-client";
+import TWebsocket from '@/tools/websocket';
 import TRecorder from '@/tools/recorder';
+
 import { connect, disconnect } from '@/api/recorder';
 import './index.less';
 class Recorder extends Component{
@@ -11,49 +12,48 @@ class Recorder extends Component{
         this.state = {
             status: 0
         };
-        // const { send_rtmp, session } = start(
-        //     {
-        //         source: "",
-        //         target: "",
-        //         device :"web",
-        //         sampleRateInHz: "44100Hz",
-        //         audioFormat: "ENCODING_PCM_16BIT",
-        //         fileFormat: "AAC"
-        //     }
-        // );
-        // this.session = session;
-        // this.ws = this.initWebSocket(send_rtmp);
-    }
-    componentDidMount() {
-        this.recorder = new TRecorder(this.audioRef.current);
-    }
-    componentWillUnmount() {
-        // this.ws.close();
     }
     connectHandle = () => {
         this.props.form.validateFields((err, values) => {
             if (!err) {
                 this.setState({status: 1});
-                const {wsUrl} = connect({
-
+                const {session, receive_rtmp} = connect({
+                    device: "web",
+                    source: "",
+                    target: values.deviceId, //对讲目标设备id，必填
+                    sampleRateInHz: "48K",
+                    audioFormat: "AAC",
+                    fileFormat: ""
                 });
-                const socket = io(wsUrl);
-                socket.on('connect', () => {
-                    console.log(socket.connected); // true
+                this.socket = new TWebsocket({
+                    socketUrl: receive_rtmp,
+                    socketOpen: this._socketOpen.bind(this, session),
+                    socketMessage: null,
+                    socketClose: this._socketDisconnect.bind(this),
+                    socketError: null
                 });
             }
         });
     }
-    recorderHandle = () => {
+    _socketOpen = session => {
+        this.session = session;
+        this.recorder = new TRecorder();
         this.recorder.start();
+        this.recorder.ondataavailable = event => {
+            this.socket.sendMessage(event.data);
+        }
+    }
+    _socketDisconnect = () => {
+        message.error('连接中断');
+        this.setState({status: 3});
     }
     finishHandle = () => {
-        // this.recorder.stop();
-        // const data = this.recorder.getBlob();
-        // this.ws.send(data);
-        // stop(this.session);
+        this.recorder && this.recorder.stop();
+        this.session && disconnect({
+            session: this.session
+        });
         this.setState({status: 0});
-        disconnect();
+        this.socket && this.socket.close();
     }
     statusWatcher = (status) => {
         if(status===0){
@@ -62,7 +62,12 @@ class Recorder extends Component{
             return '连接建立中....';
         }else if(status===2){
             return '对讲中';
+        }else if(status===3){
+            return '正在重连';
         }
+    }
+    componentWillUnmount() {
+        this.finishHandle();
     }
     render() {
         const { getFieldDecorator } = this.props.form;
@@ -78,7 +83,7 @@ class Recorder extends Component{
                     <Form.Item>
                         {getFieldDecorator('deviceId', {
                             rules: [{ required: true, message: '请输入设备ID' }],
-                        })(<Input type="password" className="form-input" placeholder="设备ID" />)
+                        })(<Input className="form-input" placeholder="设备ID" />)
                         }
                     </Form.Item>
                     <Form.Item>

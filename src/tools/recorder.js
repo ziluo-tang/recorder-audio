@@ -1,7 +1,6 @@
 import { message } from 'antd';
 export default class Recorder{
-    constructor(audio) {
-        this.audio = audio;
+    constructor() {
         this.chunks = [];
         this.init();
     }
@@ -18,7 +17,7 @@ export default class Recorder{
                 this.chunks.push(event.data);
             }
             this.mediaRecorder.onstop = event => {
-                this.audio.srcObject = stream;   
+                
             }
         };
         let error = err => {
