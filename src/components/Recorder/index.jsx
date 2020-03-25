@@ -38,7 +38,7 @@ class Recorder extends Component{
             }
         });
     }
-    _socketOpen = session => {
+    _socketOpen = () => {
         this.setState({status: 2});
         this.recorder = new TRecorder();
         this.recorder.start();
@@ -66,7 +66,7 @@ class Recorder extends Component{
         }else if(status===2){
             return '对讲中';
         }else if(status===3){
-            return '正在重连';
+            return '正在重连...';
         }
     }
     componentWillUnmount() {
