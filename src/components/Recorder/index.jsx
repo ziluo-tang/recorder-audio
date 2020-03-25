@@ -35,6 +35,7 @@ class Recorder extends Component{
                     socketClose: this._socketDisconnect.bind(this),
                     socketError: null
                 });
+                this.socket.connectWs();
             }
         });
     }

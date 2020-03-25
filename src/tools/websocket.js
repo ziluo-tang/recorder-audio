@@ -1,13 +1,14 @@
 import { message } from "antd";
+import { tuple } from "antd/lib/_util/type";
 export default class webSocket {
     constructor(param = {}) {
         this.param = param;
         this.reconnectCount = 0;
         this.socket = null;
         this.taskRemindInterval = null;
-        this.isSucces = true;
+        this.isConnect = false;
     }
-    connection = () => {
+    connectWs = () => {
         let { socketUrl, timeout = 0 } = this.param;
         if ('WebSocket' in window) {
             this.socket = new WebSocket(socketUrl);
@@ -29,18 +30,18 @@ export default class webSocket {
         }else{
             message.info('您的浏览器不支持 WebSocket!');
         }
-    };
+    }
     onopen = () => {
         let { socketOpen } = this.param;
-        this.isSucces= false  //连接成功将标识符改为false
+        this.isConnect = true;
         socketOpen && socketOpen();
-    };
+    }
     onmessage = event => {
         let { socketMessage } = this.param;
         socketMessage && socketMessage(event.data);
-    };
+    }
     onclose = event => {
-        this.isSucces = true;  //关闭将标识符改为true
+        this.isConnect = false;
         let { socketClose } = this.param;
         socketClose && socketClose(event);
         // 根据后端返回的状态码做操作
@@ -50,8 +51,8 @@ export default class webSocket {
             this.socket.close();
         }else{
             this.taskRemindInterval = setInterval(()=>{
-                if(this.isSucces){
-                    this.connection();
+                if(!this.isConnect){
+                    this.connectWs();
                 }else{
                     clearInterval(this.taskRemindInterval)
                 }
