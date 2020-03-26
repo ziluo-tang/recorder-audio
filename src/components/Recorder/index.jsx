@@ -17,7 +17,9 @@ class Recorder extends Component{
         this.props.form.validateFields((err, values) => {
             if (!err) {
                 this.setState({status: 1});
+                this.server = values.server;
                 connect({
+                    server: values.server,
                     device: "web",
                     source: "",
                     target: values.deviceId, //对讲目标设备id，必填
@@ -27,24 +29,36 @@ class Recorder extends Component{
                 }).then(data => {
                     this.session = data.session;
                     this.socketUrl = data.receive_rtmp
+                    if(this.socketUrl){
+                        this.socket = new TWebsocket({
+                            socketUrl: this.socketUrl,
+                            socketOpen: this._socketOpen.bind(this),
+                            socketMessage: null,
+                            socketClose: this._socketDisconnect.bind(this),
+                            socketError: null
+                        });
+                        this.socket.connectWs();
+                    }else{
+                        setTimeout(() => {
+                            message.error('连接失败');
+                            this.setState({status: 0});
+                        }, 1000);
+                    }
                 });
-                this.socket = new TWebsocket({
-                    socketUrl: this.socketUrl,
-                    socketOpen: this._socketOpen.bind(this),
-                    socketMessage: null,
-                    socketClose: this._socketDisconnect.bind(this),
-                    socketError: null
-                });
-                this.socket.connectWs();
             }
         });
     }
     _socketOpen = () => {
         this.setState({status: 2});
         this.recorder = new TRecorder();
-        this.recorder.start();
-        this.recorder.ondataavailable = event => {
-            this.socket.sendMessage(event.data);
+        if(this.recorder.isRecorder){
+            this.recorder.start();
+            this.recorder.ondataavailable = event => {
+                this.socket.sendMessage(event.data);
+            }
+        }else{
+            this.socket.close();
+            this.setState({status: 0});
         }
     }
     _socketDisconnect = () => {
@@ -54,6 +68,7 @@ class Recorder extends Component{
     finishHandle = () => {
         this.recorder && this.recorder.stop();
         this.session && disconnect({
+            server: this.server,
             session: this.session
         });
         this.setState({status: 0});
@@ -79,9 +94,9 @@ class Recorder extends Component{
             <div className="recorder-wrapper">
                <Form onSubmit={this.handleSubmit} className="recorder-form">
                     <Form.Item>
-                        {getFieldDecorator('api', {
-                            rules: [{ required: true, message: '请输入API地址' }],
-                        })(<Input placeholder="API地址" className="form-input" />)
+                        {getFieldDecorator('server', {
+                            rules: [{ required: true, message: '请输入服务地址' }],
+                        })(<Input placeholder="服务地址" className="form-input" />)
                         }
                     </Form.Item>
                     <Form.Item>

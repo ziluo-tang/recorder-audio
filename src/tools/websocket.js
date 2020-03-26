@@ -47,7 +47,7 @@ export default class webSocket {
         // 根据后端返回的状态码做操作
         // 我的项目是当前页面打开两个或者以上，就把当前以打开的socket关闭
         // 否则就1秒重连一次，直到重连成功为止 
-        if(event.code=='4500'){
+        if(event.code === '1006'){
             this.socket.close();
         }else{
             this.taskRemindInterval = setInterval(()=>{

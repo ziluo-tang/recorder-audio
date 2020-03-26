@@ -1,6 +1,6 @@
 import { message } from 'antd';
 export async function connect(param) {
-    const response = await fetch('/v1/voice/start', {
+    const response = await fetch(`${param.server}/v1/voice/start`, {
         body: JSON.stringify(param),
         cache: 'no-cache',
         credentials: 'include',
@@ -20,7 +20,7 @@ export async function connect(param) {
 }
 
 export async function disconnect(param) {
-    const response = await fetch('/v1/voice/stop', {
+    const response = await fetch(`${param.server}/v1/voice/stop`, {
         body: JSON.stringify(param),
         cache: 'no-cache',
         credentials: 'include',

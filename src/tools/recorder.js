@@ -1,6 +1,7 @@
 import { message } from 'antd';
 export default class Recorder{
     constructor() {
+        this.isRecorder = false;
         this.chunks = [];
         this.init();
     }
@@ -9,6 +10,7 @@ export default class Recorder{
             audio: true
         };
         let success = stream => {
+            this.isRecorder = true;
             this.mediaRecorder = new MediaRecorder(stream, {
                 audioBitsPerSecond : 128000, // 音频码率
                 mimeType : 'audio/webm' // 编码格式
@@ -21,6 +23,7 @@ export default class Recorder{
             }
         };
         let error = err => {
+            this.isRecorder = false;
             switch (err.code || err.name) {  
                 case 'PERMISSION_DENIED':  
                 case 'PermissionDeniedError':  
@@ -39,7 +42,9 @@ export default class Recorder{
                     break;  
             }  
         };
-        if(navigator.mediaDevices.getUserMedia){
+        if(navigator.getUserMedia){
+            navigator.getUserMedia(constrains, success, error);
+        }else if (navigator.mediaDevices.getUserMedia){
             navigator.mediaDevices.getUserMedia(constrains).then(success).catch(error);
         } else if (navigator.webkitGetUserMedia){
             navigator.webkitGetUserMedia(constrains).then(success).catch(error);
@@ -52,10 +57,10 @@ export default class Recorder{
         }
     }
     start() {
-        this.mediaRecorder.start();
+        this.isRecorder && this.mediaRecorder.start();
     }
     stop() {
-        this.mediaRecorder.stop();
+        this.isRecorder && this.mediaRecorder.stop();
     }
     getBlob() {
         return new Blob(this.mediaRecorder.requestData(), { type: 'audio/wav' });
