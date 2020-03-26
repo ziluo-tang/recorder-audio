@@ -70,9 +70,10 @@ class Recorder extends Component{
         this.session && disconnect({
             server: this.server,
             session: this.session
+        }).then(() => {
+            this.setState({status: 0});
+            this.socket && this.socket.close();
         });
-        this.setState({status: 0});
-        this.socket && this.socket.close();
     }
     statusWatcher = (status) => {
         if(status===0){

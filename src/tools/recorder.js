@@ -7,6 +7,7 @@ export default class Recorder{
     }
     init() {
         const constrains = {
+            video: false,
             audio: true
         };
         let success = stream => {
@@ -19,7 +20,7 @@ export default class Recorder{
                 this.chunks.push(event.data);
             }
             this.mediaRecorder.onstop = event => {
-                
+                stream.getTracks()[0].stop();
             }
         };
         let error = err => {

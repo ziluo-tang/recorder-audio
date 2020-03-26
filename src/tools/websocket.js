@@ -19,14 +19,14 @@ export default class webSocket {
             this.socket.sendMessage = this.sendMessage;
             this.socket.closeSocket = this.closeSocket;
             // 检测返回的状态码 如果socket.readyState不等于1则连接失败，关闭连接
-            if(timeout) {
-                let time = setTimeout(() => {
-                    if(this.socket && this.socket.readyState !== 1) {
-                        this.socket.close();
-                    }
-                    clearInterval(time);
-                }, timeout);
-            }
+            // if(timeout) {
+            //     let time = setTimeout(() => {
+            //         if(this.socket && this.socket.readyState !== 1) {
+            //             this.socket.close();
+            //         }
+            //         clearInterval(time);
+            //     }, timeout);
+            // }
         }else{
             message.info('您的浏览器不支持 WebSocket!');
         }
