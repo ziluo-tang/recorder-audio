@@ -1,5 +1,4 @@
 import { message } from "antd";
-import { tuple } from "antd/lib/_util/type";
 export default class webSocket {
     constructor(param = {}) {
         this.param = param;

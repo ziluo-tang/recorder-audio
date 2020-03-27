@@ -74,20 +74,10 @@ class Broadcast extends Component{
         }
     }
     componentDidMount() {
-        this.recorder = new TRecorder({
-            onSuccess: () => {
-                this.recorder.start();
-                setTimeout(() => {
-                    this.recorder.stop();
-                }, 5000);
-            },
-            onSend: data => {
-                console.log(data, '***录音数据***');
-                // this.socket.sendMessage(data);
-            },
-            onError: null
-        });
-        this.recorder.init();
+        // this.recorder = new TRecorder();
+        // this.recorder.open().then(() => {
+
+        // });
     }
     componentWillUnmount() {
         // this.ws.close();

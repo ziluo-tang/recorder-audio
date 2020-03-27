@@ -4,8 +4,7 @@ export default class Recorder{
         this.isRecorder = false;
         this.param = param; 
     }
-    init() {
-        let { onSuccess, onSend, onError } = this.param;
+    async open() {
         const constrains = {
             video: false,
             audio: true
@@ -16,14 +15,9 @@ export default class Recorder{
                 audioBitsPerSecond : 128000, // 音频码率
                 mimeType : 'audio/webm' // 编码格式
             });
-            this.mediaRecorder.ondataavailable = event => {
-                onSend && onSend(event.data);
-            }
-            onSuccess && onSuccess();
         };
         let error = err => {
             this.isRecorder = false;
-            onError && onError();
             switch (err.code || err.name) {  
                 case 'PERMISSION_DENIED':  
                 case 'PermissionDeniedError':  
@@ -43,17 +37,17 @@ export default class Recorder{
             }  
         };
         if(navigator.getUserMedia){
-            navigator.getUserMedia(constrains, success, error);
+            return await navigator.getUserMedia(constrains, success, error);
         }else if (navigator.mediaDevices.getUserMedia){
-            navigator.mediaDevices.getUserMedia(constrains).then(success).catch(error);
+            return await navigator.mediaDevices.getUserMedia(constrains).then(success).catch(error);
         } else if (navigator.webkitGetUserMedia){
-            navigator.webkitGetUserMedia(constrains).then(success).catch(error);
+            return await navigator.webkitGetUserMedia(constrains).then(success).catch(error);
         } else if (navigator.mozGetUserMedia){
-            navigator.mozGetUserMedia(constrains).then(success).catch(error);
+            return await navigator.mozGetUserMedia(constrains).then(success).catch(error);
         } else if (navigator.getUserMedia){
-            navigator.getUserMedia(constrains).then(success).catch(error);
+            return await navigator.getUserMedia(constrains).then(success).catch(error);
         } else {
-            message.error('当前浏览器不支持录音功能');
+            return await message.error('当前浏览器不支持录音功能');
         }
     }
     start() {
@@ -62,12 +56,14 @@ export default class Recorder{
         console.log(this.mediaRecorder.state);
     }
     stop() {
-        if(this.mediaRecorder.state!='inactive'){
+        if(this.mediaRecorder.state!=='inactive'){
             this.mediaRecorder.stop();
-            this.mediaRecorder.stream.getTracks()[0].stop();
         }
     }
-    getBlob() {
+    close() {
+        this.mediaRecorder.stream.getTracks()[0].stop();
+    }
+    getData() {
         return new Blob(this.mediaRecorder.requestData(), { type: 'audio/wav' });
         // return new Blob(this.chunks, { type: 'audio/wav' });
     }
