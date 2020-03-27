@@ -35,7 +35,6 @@ class Recorder extends Component{
                             this.socket = new TWebsocket({
                                 socketUrl: this.socketUrl,
                                 socketOpen: this._socketOpen.bind(this),
-                                socketMessage: null,
                                 socketClose: this._socketDisconnect.bind(this),
                                 socketError: null
                             });
