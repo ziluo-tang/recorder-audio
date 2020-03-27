@@ -1,11 +1,11 @@
 import { message } from 'antd';
 export default class Recorder{
-    constructor() {
+    constructor(param) {
         this.isRecorder = false;
-        this.chunks = [];
-        this.init();
+        this.param = param; 
     }
     init() {
+        let { onSuccess, onSend, onError } = this.param;
         const constrains = {
             video: false,
             audio: true
@@ -17,14 +17,13 @@ export default class Recorder{
                 mimeType : 'audio/webm' // 编码格式
             });
             this.mediaRecorder.ondataavailable = event => {
-                this.chunks.push(event.data);
+                onSend && onSend(event.data);
             }
-            this.mediaRecorder.onstop = event => {
-                stream.getTracks()[0].stop();
-            }
+            onSuccess && onSuccess();
         };
         let error = err => {
             this.isRecorder = false;
+            onError && onError();
             switch (err.code || err.name) {  
                 case 'PERMISSION_DENIED':  
                 case 'PermissionDeniedError':  
@@ -58,10 +57,15 @@ export default class Recorder{
         }
     }
     start() {
+        console.log('***对讲开始***');
         this.isRecorder && this.mediaRecorder.start();
+        console.log(this.mediaRecorder.state);
     }
     stop() {
-        this.isRecorder && this.mediaRecorder.stop();
+        if(this.mediaRecorder.state!='inactive'){
+            this.mediaRecorder.stop();
+            this.mediaRecorder.stream.getTracks()[0].stop();
+        }
     }
     getBlob() {
         return new Blob(this.mediaRecorder.requestData(), { type: 'audio/wav' });

@@ -73,6 +73,22 @@ class Broadcast extends Component{
             return '对讲中';
         }
     }
+    componentDidMount() {
+        this.recorder = new TRecorder({
+            onSuccess: () => {
+                this.recorder.start();
+                setTimeout(() => {
+                    this.recorder.stop();
+                }, 5000);
+            },
+            onSend: data => {
+                console.log(data, '***录音数据***');
+                // this.socket.sendMessage(data);
+            },
+            onError: null
+        });
+        this.recorder.init();
+    }
     componentWillUnmount() {
         // this.ws.close();
     }

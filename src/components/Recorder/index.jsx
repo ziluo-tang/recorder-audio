@@ -49,21 +49,27 @@ class Recorder extends Component{
         });
     }
     _socketOpen = () => {
-        this.setState({status: 2});
-        this.recorder = new TRecorder();
-        if(this.recorder.isRecorder){
-            this.recorder.start();
-            this.recorder.ondataavailable = event => {
-                this.socket.sendMessage(event.data);
-            }
-        }else{
-            this.socket.close();
-            this.setState({status: 0});
-        }
+        this.recorder = new TRecorder({
+            onSuccess: this._recorderOpen.bind(this),
+            onSend: data => {
+                console.log(data, '***录音数据***');
+                this.socket.sendMessage(data);
+            },
+            onError: this._recorderError.bind(this)
+        });
+        this.recorder.init();
     }
     _socketDisconnect = () => {
         message.error('连接中断');
         this.setState({status: 3});
+    }
+    _recorderOpen = () => {
+        this.recorder.start();
+        this.setState({status: 2});
+    }
+    _recorderError = () => {
+        this.socket.close();
+        this.setState({status: 0});
     }
     finishHandle = () => {
         this.recorder && this.recorder.stop();
@@ -81,7 +87,7 @@ class Recorder extends Component{
         }else if(status===1){
             return '连接建立中....';
         }else if(status===2){
-            return '对讲中';
+            return '对讲中...';
         }else if(status===3){
             return '正在重连...';
         }

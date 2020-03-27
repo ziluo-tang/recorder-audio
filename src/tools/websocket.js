@@ -9,7 +9,7 @@ export default class webSocket {
         this.isConnect = false;
     }
     connectWs = () => {
-        let { socketUrl, timeout = 0 } = this.param;
+        let { socketUrl } = this.param;
         if ('WebSocket' in window) {
             this.socket = new WebSocket(socketUrl);
             this.socket.onopen = this.onopen;
@@ -18,15 +18,6 @@ export default class webSocket {
             this.socket.onerror = this.onerror;
             this.socket.sendMessage = this.sendMessage;
             this.socket.closeSocket = this.closeSocket;
-            // 检测返回的状态码 如果socket.readyState不等于1则连接失败，关闭连接
-            // if(timeout) {
-            //     let time = setTimeout(() => {
-            //         if(this.socket && this.socket.readyState !== 1) {
-            //             this.socket.close();
-            //         }
-            //         clearInterval(time);
-            //     }, timeout);
-            // }
         }else{
             message.info('您的浏览器不支持 WebSocket!');
         }
@@ -44,20 +35,21 @@ export default class webSocket {
         this.isConnect = false;
         let { socketClose } = this.param;
         socketClose && socketClose(event);
+        this.socket.close();
         // 根据后端返回的状态码做操作
         // 我的项目是当前页面打开两个或者以上，就把当前以打开的socket关闭
         // 否则就1秒重连一次，直到重连成功为止 
-        if(event.code === '1006'){
-            this.socket.close();
-        }else{
-            this.taskRemindInterval = setInterval(()=>{
-                if(!this.isConnect){
-                    this.connectWs();
-                }else{
-                    clearInterval(this.taskRemindInterval)
-                }
-            },1000)
-        }
+        // if(event.code === '1006'){
+        //     this.socket.close();
+        // }else{
+        //     this.taskRemindInterval = setInterval(()=>{
+        //         if(!this.isConnect){
+        //             this.connectWs();
+        //         }else{
+        //             clearInterval(this.taskRemindInterval)
+        //         }
+        //     },1000)
+        // }
     }
     //socket连接报错触发
     onerror = event => {
@@ -66,6 +58,7 @@ export default class webSocket {
         socketError && socketError(event);
     };
     sendMessage = data => {
+        console.log(data, "***websocket测试数据***");
         this.socket && this.socket.send(data);
     }
     close = () => {
