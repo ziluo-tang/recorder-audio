@@ -50,9 +50,7 @@ export default class Recorder{
         }
     }
     start() {
-        console.log('***对讲开始***');
         this.isRecorder && this.mediaRecorder.start();
-        console.log(this.mediaRecorder.state);
     }
     stop() {
         if(this.mediaRecorder.state!=='inactive'){

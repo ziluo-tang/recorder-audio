@@ -54,9 +54,9 @@ class Recorder extends Component{
         }
     }
     disconnectHandle = () => {
-        this.audio && this.audio.stop();
-        this.audio && this.audio.close();
-        this.session && disconnect({
+        this.audio.stop();
+        this.audio.close();
+        disconnect({
             server: this.server,
             session: this.session
         }).then(() => {
@@ -78,11 +78,15 @@ class Recorder extends Component{
     recorderHandle = () => {
         this.audio.start();
         this.setState({recording: true});
+        document.querySelector('audio') && document.removeChild(document.querySelector('audio'));
     }
     sendHandle = () => {
         this.audio.stop();
         this.audio.mediaRecorder.ondataavailable = event => {
-            this.socket.sendMessage(event.data);
+            let audio = document.createElement('audio');
+            audio.src = window.URL.createObjectURL(event.data);
+            audio.play();
+            this.socket && this.socket.sendMessage(event.data);
         }
         this.setState({recording: false});
     }

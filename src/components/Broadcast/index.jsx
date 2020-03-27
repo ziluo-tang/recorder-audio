@@ -74,10 +74,10 @@ class Broadcast extends Component{
         }
     }
     componentDidMount() {
-        // this.recorder = new TRecorder();
-        // this.recorder.open().then(() => {
+        this.recorder = new TRecorder();
+        this.recorder.open().then(() => {
 
-        // });
+        });
     }
     componentWillUnmount() {
         // this.ws.close();
