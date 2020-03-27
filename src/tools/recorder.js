@@ -1,8 +1,7 @@
 import { message } from 'antd';
 export default class Recorder{
-    constructor(param) {
+    constructor() {
         this.isRecorder = false;
-        this.param = param; 
     }
     async open() {
         const constrains = {
@@ -64,7 +63,6 @@ export default class Recorder{
         this.mediaRecorder.stream.getTracks()[0].stop();
     }
     getData() {
-        return new Blob(this.mediaRecorder.requestData(), { type: 'audio/wav' });
-        // return new Blob(this.chunks, { type: 'audio/wav' });
+        return this.chunks;
     }
 }

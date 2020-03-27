@@ -11,6 +11,7 @@ class Recorder extends Component{
         this.audioRef = React.createRef();
         this.state = {
             status: 0,
+            audioReady: false,
             recording: false
         };
     }
@@ -64,9 +65,10 @@ class Recorder extends Component{
         });
     }
     _socketOpen = () => {
+        this.setState({status: 2});
         this.audio = new TRecorder();
         this.audio.open().then(() => {
-            this.setState({status: 2});
+            this.setState({audioReady: true});
         });
     }
     _socketDisconnect = () => {
@@ -79,8 +81,9 @@ class Recorder extends Component{
     }
     sendHandle = () => {
         this.audio.stop();
-        const data = this.audio.getData();
-        this.socket.sendMessage(data);
+        this.audio.mediaRecorder.ondataavailable = event => {
+            this.socket.sendMessage(event.data);
+        }
         this.setState({recording: false});
     }
     statusWatcher = (status) => {
@@ -113,10 +116,23 @@ class Recorder extends Component{
                         }
                     </Form.Item>
                     <Form.Item>
-                        <Button type="primary" className="form-btn" loading={this.state.status===1} disabled={(this.state.status===0 || this.state.status===2)?false:true} onClick={this.connectHandle}>{this.statusWatcher(this.state.status)}</Button>
+                        <Button type="primary" 
+                            className="form-btn" 
+                            loading={this.state.status===1} 
+                            disabled={(this.state.status===0 || this.state.status===2)?false:true} 
+                            onClick={this.connectHandle}>
+                            {this.statusWatcher(this.state.status)}
+                        </Button>
                     </Form.Item>
                     <Form.Item>
-                        <Button type={this.state.recording?'danger':'primary'} className="form-btn" disabled={this.state.status===2?false:true} onMouseDown={this.recorderHandle} onMouseUp={this.sendHandle}>{this.state.recording?'松开结束': '按住说话'}</Button>
+                        <Button 
+                            type={this.state.recording?'danger':'primary'} 
+                            className="form-btn" 
+                            disabled={!this.state.audioReady}
+                            onMouseDown={this.recorderHandle} 
+                            onMouseUp={this.sendHandle}>
+                            {this.state.recording?'松开结束': '按住说话'}
+                        </Button>
                     </Form.Item>
                 </Form>
             </div>

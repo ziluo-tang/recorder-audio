@@ -113,9 +113,9 @@ class Broadcast extends Component{
                 </div> */}
                 <Form onSubmit={this.handleSubmit}>
                     <Form.Item>
-                        {getFieldDecorator('api', {
-                            rules: [{ required: true, message: '请输入API地址' }],
-                        })(<Input placeholder="API地址" className="form-input" />)
+                        {getFieldDecorator('server', {
+                            rules: [{ required: true, message: '请输入服务地址' }],
+                        })(<Input placeholder="服务地址" className="form-input" />)
                         }
                     </Form.Item>
                     {formItems}
@@ -125,8 +125,23 @@ class Broadcast extends Component{
                         </Button>
                     </Form.Item>
                     <Form.Item>
-                        <Button type="primary" loading={this.state.status===1} disabled={this.state.status===0?false:true} onClick={this.connectHandle}>{this.statusWatcher(this.state.status)}</Button>
-                        <Button type="danger" htmlType="submit" onClick={this.broadcastHandle}>结束对讲</Button>
+                        <Button 
+                            type="primary" 
+                            className="form-btn" 
+                            loading={this.state.status===1} 
+                            disabled={this.state.status===0?false:true} 
+                            onClick={this.connectHandle}>
+                            {this.statusWatcher(this.state.status)}
+                        </Button>
+                    </Form.Item>
+                    <Form.Item>
+                        <Button 
+                            type="primary" 
+                            className="form-btn" 
+                            htmlType="submit" 
+                            onClick={this.broadcastHandle}>
+                                按住说话
+                        </Button>
                     </Form.Item>
                 </Form>
             </div>
