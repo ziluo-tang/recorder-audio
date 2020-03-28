@@ -54,9 +54,9 @@ class Recorder extends Component{
         }
     }
     disconnectHandle = () => {
-        this.audio.stop();
-        this.audio.close();
-        disconnect({
+        this.audio && this.audio.stop();
+        this.audio && this.audio.close();
+        this.session && disconnect({
             server: this.server,
             session: this.session
         }).then(() => {
