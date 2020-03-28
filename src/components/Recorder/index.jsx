@@ -69,6 +69,7 @@ class Recorder extends Component{
         this.audio = new TRecorder();
         this.audio.open().then(() => {
             this.setState({audioReady: true});
+            this.audio.start();
         });
     }
     _socketDisconnect = () => {
@@ -98,6 +99,9 @@ class Recorder extends Component{
         }else if(status===2){
             return '断开连接';
         }
+    }
+    componentDidMount() {
+        this._socketOpen();
     }
     componentWillUnmount() {
         this.disconnectHandle();

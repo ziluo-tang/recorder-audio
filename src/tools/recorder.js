@@ -9,11 +9,12 @@ export default class Recorder{
             audio: true
         };
         let success = stream => {
-            this.isRecorder = true;
-            this.mediaRecorder = new MediaRecorder(stream, {
-                audioBitsPerSecond : 128000, // 音频码率
-                mimeType : 'audio/webm' // 编码格式
-            });
+            this.connect(stream)
+            // this.isRecorder = true;
+            // this.mediaRecorder = new MediaRecorder(stream, {
+            //     audioBitsPerSecond : 128000, // 音频码率
+            //     mimeType : 'audio/webm' // 编码格式
+            // });
         };
         let error = err => {
             this.isRecorder = false;
@@ -49,13 +50,26 @@ export default class Recorder{
             return await message.error('当前浏览器不支持录音功能');
         }
     }
+    connect(stream) {
+        this.audioContext = new AudioContext();
+        console.log(this.audioContext);
+        this.audioInput = this.audioContext.createMediaStreamSource(stream);
+        console.log(this.audioInput);
+        this.recorder = this.audioContext.createScriptProcessor(4096, 2, 2);
+        this.recorder.onaudioprocess = e => {
+            console.log(e);
+        }
+    }
     start() {
-        this.isRecorder && this.mediaRecorder.start();
+        // this.isRecorder && this.mediaRecorder.start();
+        this.audioInput.connect(this.recorder);  
+        this.recorder.connect(this.audioContext.destination);
     }
     stop() {
-        if(this.mediaRecorder.state!=='inactive'){
-            this.mediaRecorder.stop();
-        }
+        this.recorder.disconnect();
+        // if(this.mediaRecorder.state!=='inactive'){
+        //     this.mediaRecorder.stop();
+        // }
     }
     close() {
         this.mediaRecorder.stream.getTracks()[0].stop();
