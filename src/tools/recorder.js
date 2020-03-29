@@ -11,8 +11,8 @@ export default class Recorder{
         let success = stream => {
             this.isRecorder = true;
             this.mediaRecorder = new MediaRecorder(stream, {
-                audioBitsPerSecond : 128000, // 音频码率
-                mimeType : 'audio/webm' // 编码格式
+                audioBitsPerSecond : 64000, // 音频码率
+                mimeType : 'audio/webm;codecs=pcm' // 编码格式
             });
         };
         let error = err => {
