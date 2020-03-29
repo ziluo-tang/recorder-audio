@@ -28,7 +28,7 @@ export default class extends Component{
         return (
             <div className="home">
                 <Card 
-                    title={<h1>Recorder Audio</h1>}
+                    title={<h1>语音对讲</h1>}
                     tabList={tabList}
                     activeTabKey={this.state.key}
                     onTabChange={this.onTabChange}

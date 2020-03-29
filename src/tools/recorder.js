@@ -1,29 +1,34 @@
 import { message } from 'antd';
 export default class Recorder{
-    constructor(param) {
+    constructor() {
         this.isRecorder = false;
-        this.param = param; 
     }
-    init() {
-        let { onSuccess, onSend, onError } = this.param;
-        const constrains = {
+    async open({bufferSize = 4096, numberOfInputChannels = 2, numberOfOutputChannels = 2} = {}) {
+        if(navigator.mediaDevices === undefined) {
+            navigator.mediaDevices = {};
+        }
+        if(navigator.mediaDevices.getUserMedia === undefined) {
+            navigator.mediaDevices.getUserMedia = function(constraints) {
+              let getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+              if (!getUserMedia) {
+                message.error('当前浏览器不支持录音功能');
+                return Promise.reject(new Error('getUserMedia is not implemented in this browser'));
+              }
+              return new Promise(function(resolve, reject) {
+                getUserMedia.call(navigator, constraints, resolve, reject);
+              });
+            }
+        }
+        const result =  await navigator.mediaDevices.getUserMedia({
             video: false,
             audio: true
-        };
-        let success = stream => {
-            this.isRecorder = true;
-            this.mediaRecorder = new MediaRecorder(stream, {
-                audioBitsPerSecond : 128000, // 音频码率
-                mimeType : 'audio/webm' // 编码格式
-            });
-            this.mediaRecorder.ondataavailable = event => {
-                onSend && onSend(event.data);
-            }
-            onSuccess && onSuccess();
-        };
-        let error = err => {
+        }).then(stream => {
+            this.audioContext = new AudioContext();
+            this.audioInput = this.audioContext.createMediaStreamSource(stream);
+            this.recorder = this.audioContext.createScriptProcessor(bufferSize, numberOfInputChannels, numberOfOutputChannels);
+            this.stream = stream;
+        }).catch(err => {
             this.isRecorder = false;
-            onError && onError();
             switch (err.code || err.name) {  
                 case 'PERMISSION_DENIED':  
                 case 'PermissionDeniedError':  
@@ -40,35 +45,23 @@ export default class Recorder{
                 default:  
                     message.error(`无法打开麦克风，异常信息: (${err.code || err.name})`);  
                     break;  
-            }  
-        };
-        if(navigator.getUserMedia){
-            navigator.getUserMedia(constrains, success, error);
-        }else if (navigator.mediaDevices.getUserMedia){
-            navigator.mediaDevices.getUserMedia(constrains).then(success).catch(error);
-        } else if (navigator.webkitGetUserMedia){
-            navigator.webkitGetUserMedia(constrains).then(success).catch(error);
-        } else if (navigator.mozGetUserMedia){
-            navigator.mozGetUserMedia(constrains).then(success).catch(error);
-        } else if (navigator.getUserMedia){
-            navigator.getUserMedia(constrains).then(success).catch(error);
-        } else {
-            message.error('当前浏览器不支持录音功能');
-        }
+            }
+        });
+        return result;
     }
-    start() {
-        console.log('***对讲开始***');
-        this.isRecorder && this.mediaRecorder.start();
-        console.log(this.mediaRecorder.state);
+    start(callback) {
+        this.audioInput.connect(this.recorder);  
+        this.recorder.connect(this.audioContext.destination);
+        this.recorder.onaudioprocess = e => {
+            if(callback && typeof callback === "function") {
+                callback(e.inputBuffer.getChannelData(0));
+            }
+        }
     }
     stop() {
-        if(this.mediaRecorder.state!='inactive'){
-            this.mediaRecorder.stop();
-            this.mediaRecorder.stream.getTracks()[0].stop();
-        }
+        this.recorder.disconnect();
     }
-    getBlob() {
-        return new Blob(this.mediaRecorder.requestData(), { type: 'audio/wav' });
-        // return new Blob(this.chunks, { type: 'audio/wav' });
+    close() {
+        this.stream.getTracks()[0].stop();
     }
 }

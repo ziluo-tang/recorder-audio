@@ -10,10 +10,19 @@ class Recorder extends Component{
         super(props);
         this.audioRef = React.createRef();
         this.state = {
-            status: 0
+            status: 0,
+            audioReady: false,
+            recording: false
         };
     }
-    connectHandle = () => {
+    wsHandle = () => {
+        if(this.state.status===0){
+            this.wsConnect();
+        }else if(this.state.status===2){
+            this.wsDisconnect();
+        }
+    }
+    wsConnect = () => {
         this.props.form.validateFields((err, values) => {
             if (!err) {
                 this.setState({status: 1});
@@ -28,12 +37,11 @@ class Recorder extends Component{
                     fileFormat: ""
                 }).then(data => {
                     this.session = data.session;
-                    this.socketUrl = data.receive_rtmp
+                    this.socketUrl = data.receive_rtmp;
                     if(this.socketUrl){
                         this.socket = new TWebsocket({
                             socketUrl: this.socketUrl,
                             socketOpen: this._socketOpen.bind(this),
-                            socketMessage: null,
                             socketClose: this._socketDisconnect.bind(this),
                             socketError: null
                         });
@@ -48,31 +56,9 @@ class Recorder extends Component{
             }
         });
     }
-    _socketOpen = () => {
-        this.recorder = new TRecorder({
-            onSuccess: this._recorderOpen.bind(this),
-            onSend: data => {
-                console.log(data, '***录音数据***');
-                this.socket.sendMessage(data);
-            },
-            onError: this._recorderError.bind(this)
-        });
-        this.recorder.init();
-    }
-    _socketDisconnect = () => {
-        message.error('连接中断');
-        this.setState({status: 3});
-    }
-    _recorderOpen = () => {
-        this.recorder.start();
-        this.setState({status: 2});
-    }
-    _recorderError = () => {
-        this.socket.close();
-        this.setState({status: 0});
-    }
-    finishHandle = () => {
-        this.recorder && this.recorder.stop();
+    wsDisconnect = () => {
+        this.audio && this.audio.stop();
+        this.audio && this.audio.close();
         this.session && disconnect({
             server: this.server,
             session: this.session
@@ -81,19 +67,39 @@ class Recorder extends Component{
             this.socket && this.socket.close();
         });
     }
+    _socketOpen = () => {
+        this.setState({status: 2});
+        this.audio = new TRecorder();
+        this.audio.open().then(() => {
+            this.setState({audioReady: true});
+        });
+    }
+    _socketDisconnect = () => {
+        message.error('连接中断');
+        this.setState({status: 0});
+    }
+    audioHandle = () => {
+        if(!this.state.recording){
+            this.audio.start(data => {
+                this.socket.sendMessage(data);
+            });
+            this.setState({recording: true});
+        }else{
+            this.audio.stop();
+            this.setState({recording: false});
+        }
+    }
     statusWatcher = (status) => {
         if(status===0){
-            return '开始对讲';
+            return '建立连接';
         }else if(status===1){
-            return '连接建立中....';
+            return '连接中....';
         }else if(status===2){
-            return '对讲中...';
-        }else if(status===3){
-            return '正在重连...';
+            return '断开连接';
         }
     }
     componentWillUnmount() {
-        this.finishHandle();
+        this.wsDisconnect();
     }
     render() {
         const { getFieldDecorator } = this.props.form;
@@ -113,8 +119,22 @@ class Recorder extends Component{
                         }
                     </Form.Item>
                     <Form.Item>
-                        <Button type="primary" loading={this.state.status===1} disabled={this.state.status===0?false:true} onClick={this.connectHandle}>{this.statusWatcher(this.state.status)}</Button>
-                        <Button type="danger" onClick={this.finishHandle}>结束对讲</Button>
+                        <Button type={this.state.status===0?'primary':'danger'} 
+                            className="form-btn" 
+                            loading={this.state.status===1} 
+                            disabled={((this.state.status===0 || this.state.status===2) && !this.state.recording)?false:true} 
+                            onClick={this.wsHandle}>
+                            {this.statusWatcher(this.state.status)}
+                        </Button>
+                    </Form.Item>
+                    <Form.Item>
+                        <Button 
+                            type={this.state.recording?'danger':'primary'} 
+                            className="form-btn" 
+                            disabled={!this.state.audioReady}
+                            onClick={this.audioHandle}>
+                            {this.state.recording?'结束对话': '开始对话'}
+                        </Button>
                     </Form.Item>
                 </Form>
             </div>

@@ -1,5 +1,4 @@
 import { message } from "antd";
-import { tuple } from "antd/lib/_util/type";
 export default class webSocket {
     constructor(param = {}) {
         this.param = param;
@@ -58,7 +57,6 @@ export default class webSocket {
         socketError && socketError(event);
     };
     sendMessage = data => {
-        console.log(data, "***websocket测试数据***");
         this.socket && this.socket.send(data);
     }
     close = () => {
