@@ -4,19 +4,32 @@ export default class Recorder{
         this.isRecorder = false;
     }
     async open() {
-        const constrains = {
+        if(navigator.mediaDevices === undefined) {
+            navigator.mediaDevices = {};
+        }
+        if(navigator.mediaDevices.getUserMedia === undefined) {
+            navigator.mediaDevices.getUserMedia = function(constraints) {
+              let getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+              if (!getUserMedia) {
+                message.error('当前浏览器不支持录音功能');
+                return Promise.reject(new Error('getUserMedia is not implemented in this browser'));
+              }
+              return new Promise(function(resolve, reject) {
+                getUserMedia.call(navigator, constraints, resolve, reject);
+              });
+            }
+        }
+        const result =  await navigator.mediaDevices.getUserMedia({
             video: false,
             audio: true
-        };
-        let success = stream => {
-            this.connect(stream)
-            // this.isRecorder = true;
-            // this.mediaRecorder = new MediaRecorder(stream, {
-            //     audioBitsPerSecond : 128000, // 音频码率
-            //     mimeType : 'audio/webm' // 编码格式
-            // });
-        };
-        let error = err => {
+        }).then(stream => {
+            this.audioContext = new AudioContext();
+            this.audioInput = this.audioContext.createMediaStreamSource(stream);
+            this.recorder = this.audioContext.createScriptProcessor(4096, 1, 1);
+            this.recorder.onaudioprocess = e => {
+                // console.log(e.inputBuffer.getChannelData(0));
+            }
+        }).catch(err => {
             this.isRecorder = false;
             switch (err.code || err.name) {  
                 case 'PERMISSION_DENIED':  
@@ -34,31 +47,9 @@ export default class Recorder{
                 default:  
                     message.error(`无法打开麦克风，异常信息: (${err.code || err.name})`);  
                     break;  
-            }  
-        };
-        if(navigator.getUserMedia){
-            return await navigator.getUserMedia(constrains, success, error);
-        }else if (navigator.mediaDevices.getUserMedia){
-            return await navigator.mediaDevices.getUserMedia(constrains).then(success).catch(error);
-        } else if (navigator.webkitGetUserMedia){
-            return await navigator.webkitGetUserMedia(constrains).then(success).catch(error);
-        } else if (navigator.mozGetUserMedia){
-            return await navigator.mozGetUserMedia(constrains).then(success).catch(error);
-        } else if (navigator.getUserMedia){
-            return await navigator.getUserMedia(constrains).then(success).catch(error);
-        } else {
-            return await message.error('当前浏览器不支持录音功能');
-        }
-    }
-    connect(stream) {
-        this.audioContext = new AudioContext();
-        console.log(this.audioContext);
-        this.audioInput = this.audioContext.createMediaStreamSource(stream);
-        console.log(this.audioInput);
-        this.recorder = this.audioContext.createScriptProcessor(4096, 2, 2);
-        this.recorder.onaudioprocess = e => {
-            console.log(e);
-        }
+            }
+        });
+        return result;
     }
     start() {
         // this.isRecorder && this.mediaRecorder.start();
@@ -73,8 +64,5 @@ export default class Recorder{
     }
     close() {
         this.mediaRecorder.stream.getTracks()[0].stop();
-    }
-    getData() {
-        return this.chunks;
     }
 }
