@@ -63,7 +63,11 @@ class Recorder extends Component{
             server: this.server,
             session: this.session
         }).then(() => {
-            this.setState({status: 0});
+            this.setState({
+                status: 0,
+                audioReady: false,
+                recording: false
+            });
             this.socket && this.socket.close();
         });
     }
@@ -76,7 +80,7 @@ class Recorder extends Component{
     }
     _socketDisconnect = () => {
         message.error('连接中断');
-        this.setState({status: 0});
+        this.wsDisconnect();
     }
     audioHandle = () => {
         if(!this.state.recording){
