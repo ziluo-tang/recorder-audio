@@ -1,7 +1,12 @@
 import { message } from 'antd';
 export default class Recorder{
-    constructor() {
+    constructor(config={}) {
         this.isRecorder = false;
+        this.config = {
+            sampleBits: config.sampleBits || 16,
+            sampleRate: config.sampleRate || 8000,
+            inputSampleBits: 16
+        };
     }
     async open({bufferSize = 4096, numberOfInputChannels = 2, numberOfOutputChannels = 2} = {}) {
         if(navigator.mediaDevices === undefined) {
@@ -50,18 +55,72 @@ export default class Recorder{
         return result;
     }
     start(callback) {
+        let inputBuffer = [], size = 0;
         this.audioInput.connect(this.recorder);  
         this.recorder.connect(this.audioContext.destination);
         this.recorder.onaudioprocess = e => {
-            if(callback && typeof callback === "function") {
-                callback(e.inputBuffer.getChannelData(0));
-            }
+            let analogData = e.inputBuffer.getChannelData(0);
+            inputBuffer.push(new Float32Array(analogData));
+            size += analogData.length;
+            this.timeout = setTimeout(() => {
+                if(callback && typeof callback === "function") {
+                    callback(this.trans(inputBuffer, size));
+                }
+            }, 1);
         }
     }
     stop() {
         this.recorder.disconnect();
+        clearTimeout(this.timeout);
     }
     close() {
         this.stream.getTracks()[0].stop();
+    }
+    trans(analogData, size) {
+        let sampleBits = Math.min(this.config.inputSampleBits, this.config.sampleBits);  
+        let bytes = this.decompress(analogData, size);  
+        let dataLength = bytes.length * (sampleBits / 8);  
+        let buffer = new ArrayBuffer(dataLength);  
+        let data = new DataView(buffer);  
+        data = this.reshapeWavData(sampleBits, 0, bytes, data);
+        return new Blob([data], { type: 'audio/wav' });
+    }
+    decompress(analogData, size) {
+        // 合并
+        let data = new Float32Array(size);
+        let offset = 0; 
+        // 偏移量计算
+        // 将二维数据，转成一维数据
+        for (let i = 0; i < analogData.length; i++) {
+            data.set(analogData[i], offset);
+            offset += analogData[i].length;
+        }
+         //压缩
+         const getRawDataion = parseInt(this.audioContext.sampleRate / this.config.sampleRate);  
+         let length = data.length / getRawDataion;  
+         let result = new Float32Array(length);  
+         let index = 0, j = 0;  
+         while (index < length) {  
+             result[index] = data[j];  
+             j += getRawDataion;  
+             index++;  
+         }  
+        return result;
+    }
+    reshapeWavData(sampleBits, offset, iBytes, oData) {
+        if(sampleBits === 8) {  
+            for (let i = 0; i < iBytes.length; i++, offset++) {  
+                let s = Math.max(-1, Math.min(1, iBytes[i]));  
+                let val = s < 0 ? s * 0x8000 : s * 0x7FFF;  
+                val = parseInt(255 / (65535 / (val + 32768)));  
+                oData.setInt8(offset, val, true);  
+            }  
+        } else {  
+            for (let i = 0; i < iBytes.length; i++, offset += 2) {  
+                let s = Math.max(-1, Math.min(1, iBytes[i]));  
+                oData.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);  
+            }  
+        } 
+        return oData;
     }
 }
