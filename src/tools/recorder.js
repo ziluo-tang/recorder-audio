@@ -55,23 +55,17 @@ export default class Recorder{
         return result;
     }
     start(callback) {
-        let inputBuffer = [], size = 0;
         this.audioInput.connect(this.recorder);  
         this.recorder.connect(this.audioContext.destination);
         this.recorder.onaudioprocess = e => {
             let analogData = e.inputBuffer.getChannelData(0);
-            inputBuffer.push(new Float32Array(analogData));
-            size += analogData.length;
-            this.timeout = setTimeout(() => {
-                if(callback && typeof callback === "function") {
-                    callback(this.trans(inputBuffer, size));
-                }
-            }, 1);
+            if(callback && typeof callback === "function") {
+                callback(this.trans([new Float32Array(analogData)], analogData.length));
+            }
         }
     }
     stop() {
         this.recorder.disconnect();
-        clearTimeout(this.timeout);
     }
     close() {
         this.stream.getTracks()[0].stop();
