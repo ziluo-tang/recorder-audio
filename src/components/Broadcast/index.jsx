@@ -84,9 +84,9 @@ class Broadcast extends Component{
                 </div> */}
                 <Form onSubmit={this.handleSubmit}>
                     <Form.Item>
-                        {getFieldDecorator('api', {
-                            rules: [{ required: true, message: '请输入API地址' }],
-                        })(<Input placeholder="API地址" className="form-input" />)
+                        {getFieldDecorator('server', {
+                            rules: [{ required: true, message: '请输入服务地址' }],
+                        })(<Input placeholder="服务地址" className="form-input" />)
                         }
                     </Form.Item>
                     {formItems}
