@@ -46,7 +46,7 @@ class Broadcast extends Component{
                     server: values.server,
                     device: "web",
                     source: "",
-                    target: values.names, //对讲目标设备id，必填
+                    targets: values.names, //对讲目标设备id，必填
                     sampleRateInHz: "4",
                     audioFormat: "3",
                     fileFormat: ""
