@@ -44,16 +44,12 @@ class Broadcast extends Component{
                 this.server = values.server;
                 startBroadcast({
                     server: values.server,
-                    device: "web",
-                    source: "",
-                    targets: values.names, //对讲目标设备id，必填
-                    sampleRateInHz: "4",
-                    audioFormat: "3",
-                    fileFormat: ""
-                }).then(data => {
+                    targets: values.names //对讲目标设备id，必填
+                }).then(res => {
+                    const { data } = res;
                     this.session = data.session;
                     this.socketUrl = data.send_rtmp;
-                    if(this.socketUrl){
+                    if(res.errorCode==="SUCCESS" && this.socketUrl){
                         this.socket = new TWebsocket({
                             socketUrl: this.socketUrl,
                             socketOpen: this._socketOpen.bind(this),
@@ -94,8 +90,10 @@ class Broadcast extends Component{
         });
     }
     _socketDisconnect = () => {
-        message.error('连接中断');
-        this.wsDisconnect();
+        if(this.state.status!==0){
+            message.error('连接中断');
+            this.wsDisconnect();
+        }
     }
     broadcastHandle = () => {
         if(!this.state.recording){
@@ -158,7 +156,7 @@ class Broadcast extends Component{
                     </Form.Item>
                     {formItems}
                     <Form.Item>
-                        <Button type="dashed" onClick={this.add}>
+                        <Button type="dashed" onClick={this.add} disabled={this.state.status!==0}>
                             <Icon type="plus" /> 添加设备
                         </Button>
                     </Form.Item>

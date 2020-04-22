@@ -1,7 +1,8 @@
 import { message } from 'antd';
+import config from './config';
 export async function connect(param) {
     const response = await fetch(`${param.server}/v1/voice/start`, {
-        body: JSON.stringify(param),
+        body: JSON.stringify(Object.assign(config, param)),
         cache: 'no-cache',
         credentials: 'include',
         headers: {
@@ -16,7 +17,7 @@ export async function connect(param) {
     if (!response.ok) {
         message.error(result.message || '网络错误');
     }
-    return result.data;
+    return result;
 }
 
 export async function disconnect(param) {
@@ -36,12 +37,12 @@ export async function disconnect(param) {
     if (!response.ok) {
         message.error(result.message || '网络错误');
     }
-    return result.data;
+    return result;
 }
 
 export async function startBroadcast(param) {
     const response = await fetch(`${param.server}/v1/voice/broadcast/start`, {
-        body: JSON.stringify(param),
+        body: JSON.stringify(Object.assign(config, param)),
         cache: 'no-cache',
         credentials: 'include',
         headers: {

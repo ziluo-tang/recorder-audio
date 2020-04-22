@@ -29,16 +29,12 @@ class Recorder extends Component{
                 this.server = values.server;
                 connect({
                     server: values.server,
-                    device: "web",
-                    source: "",
-                    target: values.deviceId, //对讲目标设备id，必填
-                    sampleRateInHz: "4",
-                    audioFormat: "3",
-                    fileFormat: ""
-                }).then(data => {
+                    target: values.deviceId //对讲目标设备id，必填
+                }).then(res => {
+                    const { data } = res;
                     this.session = data.session;
                     this.socketUrl = data.receive_rtmp;
-                    if(this.socketUrl){
+                    if(res.errorCode==="SUCCESS" && this.socketUrl){
                         this.socket = new TWebsocket({
                             socketUrl: this.socketUrl,
                             socketOpen: this._socketOpen.bind(this),
@@ -79,8 +75,10 @@ class Recorder extends Component{
         });
     }
     _socketDisconnect = () => {
-        message.error('连接中断');
-        this.wsDisconnect();
+        if(this.state.status!==0){
+            message.error('连接中断');
+            this.wsDisconnect();
+        }
     }
     audioHandle = () => {
         if(!this.state.recording){

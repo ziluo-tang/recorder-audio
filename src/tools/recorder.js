@@ -32,6 +32,7 @@ export default class Recorder{
             this.audioInput = this.audioContext.createMediaStreamSource(stream);
             this.recorder = this.audioContext.createScriptProcessor(bufferSize, numberOfInputChannels, numberOfOutputChannels);
             this.stream = stream;
+            this.isRecorder = true;
         }).catch(err => {
             this.isRecorder = false;
             switch (err.code || err.name) {  
@@ -55,20 +56,22 @@ export default class Recorder{
         return result;
     }
     start(callback) {
-        this.audioInput.connect(this.recorder);  
-        this.recorder.connect(this.audioContext.destination);
-        this.recorder.onaudioprocess = e => {
-            let analogData = e.inputBuffer.getChannelData(0);
-            if(callback && typeof callback === "function") {
-                callback(this.trans([new Float32Array(analogData)], analogData.length));
+        if(this.isRecorder){
+            this.audioInput.connect(this.recorder);  
+            this.recorder.connect(this.audioContext.destination);
+            this.recorder.onaudioprocess = e => {
+                let analogData = e.inputBuffer.getChannelData(0);
+                if(callback && typeof callback === "function") {
+                    callback(this.trans([new Float32Array(analogData)], analogData.length));
+                }
             }
         }
     }
     stop() {
-        this.recorder.disconnect();
+        this.recorder && this.recorder.disconnect();
     }
     close() {
-        this.stream.getTracks()[0].stop();
+        this.stream && this.stream.getTracks()[0].stop();
     }
     trans(analogData, size) {
         let sampleBits = Math.min(this.config.inputSampleBits, this.config.sampleBits);  
