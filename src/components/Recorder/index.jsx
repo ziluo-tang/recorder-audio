@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Form, Input, Button, message } from 'antd';
 import TWebsocket from '@/tools/websocket';
-import TRecorder from '@/tools/recorder';
+import TRecorder from 'web-tele-lib';
 
 import { connect, disconnect } from '@/api/recorder';
 import './index.less';
@@ -48,6 +48,8 @@ class Recorder extends Component{
                             this.setState({status: 0});
                         }, 1000);
                     }
+                }).catch(err => {
+                    this.setState({status: 0});
                 });
             }
         });

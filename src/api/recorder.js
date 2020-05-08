@@ -1,5 +1,7 @@
 import { message } from 'antd';
 import config from './config';
+
+const NetworkError = 'network error';
 export async function connect(param) {
     const response = await fetch(`${param.server}/v1/voice/start`, {
         body: JSON.stringify(Object.assign(config, param)),
@@ -12,12 +14,19 @@ export async function connect(param) {
         mode: 'cors',
         redirect: 'follow',
         referrer: 'no-referrer'
+    }).catch(err => {
+        message.error(NetworkError);
+        return NetworkError;
     });
-    const result = await response.json();
-    if (!response.ok) {
-        message.error(result.message || '网络错误');
+    if(response===NetworkError){
+        return Promise.reject(NetworkError);
+    }else{
+        const result = await response.json();
+        if (!response.ok) {
+            message.error(result.message || '网络错误');
+        }
+        return result;
     }
-    return result;
 }
 
 export async function disconnect(param) {
