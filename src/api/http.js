@@ -1,8 +1,5 @@
 import { message } from 'antd';
-
-
-
-const _fetch = (fetch, timeout = 3000) => {
+const _fetch = (fetch, timeout = 15000) => {
      return Promise.race([
         fetch,
         new Promise(function(resolve, reject) {
@@ -72,21 +69,22 @@ export default {
             credentials: 'include',
             signal
         }).then(res => {
-            if(res.ok){
-                return res.json();
-            }else{
-                return Promise.reject('fail');
+            const result = res.json();
+            if(!res.ok){
+                message.error(result.message || '网络错误');
             }
-        }).catch(err => {
-            message.error(err);
+            return {
+                code: 200,
+                result
+            };
         });
-        return _fetch(postFetch).then(result => {
-                    if(result.code===200){
-                        return result;
+        return _fetch(postFetch).then(res => {
+                    if(res.code===200){
+                        return res.result;
                     }else{
-                        message.error(result.message);
+                        message.error(res.message);
                         controller.abort();
-                        return;
+                        return Promise.reject(res.message);
                     }
                 }).catch(err => Promise.reject(err));
     }

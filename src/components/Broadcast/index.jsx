@@ -30,6 +30,9 @@ class Broadcast extends Component{
           keys: keys.filter(key => key !== k),
         });
     }
+    componentDidMount(){
+        this.add();
+    }
     wsHandle = () => {
         if(this.state.status===0){
             this.wsConnect();
@@ -44,7 +47,7 @@ class Broadcast extends Component{
                 this.server = values.server;
                 startBroadcast({
                     server: values.server,
-                    targets: values.names //对讲目标设备id，必填
+                    targets: values.names.filter(id => id !== null) //对讲目标设备id，必填
                 }).then(res => {
                     const { data } = res;
                     this.session = data.session;
@@ -134,7 +137,7 @@ class Broadcast extends Component{
                             whitespace: true,
                             message: "请输入设备ID"
                     }]
-                })(<Input placeholder="设备ID" className="form-input" />)}
+                })(<Input placeholder="设备ID" className="form-input device-input" />)}
                     <Icon
                         className="dynamic-delete-button"
                         type="minus-circle-o"

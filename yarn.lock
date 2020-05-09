@@ -10951,6 +10951,11 @@ wbuf@^1.1.0, wbuf@^1.7.3:
   dependencies:
     minimalistic-assert "^1.0.0"
 
+web-tele-lib@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/web-tele-lib/-/web-tele-lib-1.0.0.tgz#e2c13df9d71f210b78f15675e5b2900a8bdd1b06"
+  integrity sha512-Ly95koDCLcou3fOYh76HjBw13XbyMwM0w2J5f7KjuWHthORnr8RG3uM6SHY+Pu3Y+TplWgD+ErDuS6CiYP+G4g==
+
 webidl-conversions@^4.0.2:
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/webidl-conversions/-/webidl-conversions-4.0.2.tgz#a855980b1f0b6b359ba1d5d9fb39ae941faa63ad"
