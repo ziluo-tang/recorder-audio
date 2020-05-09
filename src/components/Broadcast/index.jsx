@@ -66,6 +66,8 @@ class Broadcast extends Component{
                             this.setState({status: 0});
                         }, 1000);
                     }
+                }).catch(err => {
+                    this.setState({status: 0});
                 });
             }
         });

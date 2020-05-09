@@ -86,6 +86,9 @@ export default {
                         controller.abort();
                         return Promise.reject(res.message);
                     }
-                }).catch(err => Promise.reject(err));
+                }).catch(err => {
+                    message.error('请求失败');
+                    return Promise.reject(err);
+                });
     }
 }
