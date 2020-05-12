@@ -1,11 +1,13 @@
-import { message } from 'antd';
+const SuccessCode = 200;
+const TimeoutCode = 504;
 const _fetch = (fetch, timeout = 15000) => {
      return Promise.race([
         fetch,
-        new Promise(function(resolve, reject) {
+        new Promise((resolve) => {
             setTimeout(() => {
                 resolve({
-                    code: 504,
+                    status: TimeoutCode,
+                    ok: false,
                     message: "请求超时"
                 });
             }, timeout);
@@ -38,22 +40,19 @@ export default {
             mode: 'cors',
             credentials: 'include',
             signal
-        }).then(res => {
-            if(res.ok && res.status===200){
-                return res.json();
-            }else{
-                return Promise.reject('fail');
-            }
         });
-        return _fetch(getFetch).then(result => {
-                    if(result.code===200){
-                        return result;
+        return _fetch(getFetch).then(res => {
+                    if(res.ok && res.status===SuccessCode){
+                        return res.json();
                     }else{
-                        message.error(result.message);
-                        controller.abort();
-                        return;
+                        if(res.status===TimeoutCode){
+                            controller.abort();
+                        }
+                        return Promise.reject(res.message || res.statusText);
                     }
-                }).catch(err => Promise.reject(err));
+                }).catch(err => {
+                    return Promise.reject(err);
+                });
     },
     post(url, params) {
         const controller = new AbortController();
@@ -68,26 +67,17 @@ export default {
             mode: 'cors',
             credentials: 'include',
             signal
-        }).then(res => {
-            const result = res.json();
-            if(!res.ok){
-                message.error(result.message || '网络错误');
-            }
-            return {
-                code: 200,
-                result
-            };
         });
         return _fetch(postFetch).then(res => {
-                    if(res.code===200){
-                        return res.result;
+                    if(res.ok && res.status===SuccessCode){
+                        return res.json();
                     }else{
-                        message.error(res.message);
-                        controller.abort();
-                        return Promise.reject(res.message);
+                        if(res.status===TimeoutCode){
+                            controller.abort();
+                        }
+                        return Promise.reject(res.message || res.statusText);
                     }
                 }).catch(err => {
-                    message.error('请求失败');
                     return Promise.reject(err);
                 });
     }

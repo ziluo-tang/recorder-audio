@@ -49,6 +49,7 @@ class Recorder extends Component{
                         }, 1000);
                     }
                 }).catch(err => {
+                    message.error(err);
                     this.setState({status: 0});
                 });
             }
