@@ -6,7 +6,7 @@ import './index.less';
 const tabList = [
     {
       key: 'recorder',
-      tab: '点播'
+      tab: '对讲'
     },
     {
       key: 'broadcast',

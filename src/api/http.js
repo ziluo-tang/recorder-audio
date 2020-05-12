@@ -51,7 +51,7 @@ export default {
                         return Promise.reject(res.message || res.statusText);
                     }
                 }).catch(err => {
-                    return Promise.reject(err);
+                    return Promise.reject("请求错误");
                 });
     },
     post(url, params) {
@@ -69,6 +69,7 @@ export default {
             signal
         });
         return _fetch(postFetch).then(res => {
+                    console.log(res);
                     if(res.ok && res.status===SuccessCode){
                         return res.json();
                     }else{
@@ -78,7 +79,7 @@ export default {
                         return Promise.reject(res.message || res.statusText);
                     }
                 }).catch(err => {
-                    return Promise.reject(err);
+                    return Promise.reject("请求错误");
                 });
     }
 }
