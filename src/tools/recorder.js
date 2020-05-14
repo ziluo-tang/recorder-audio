@@ -1,4 +1,3 @@
-import { message } from 'antd';
 export default class Recorder{
     constructor(config={}) {
         this.isRecorder = false;
@@ -16,7 +15,7 @@ export default class Recorder{
             navigator.mediaDevices.getUserMedia = function(constraints) {
               let getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
               if (!getUserMedia) {
-                message.error('当前浏览器不支持录音功能');
+                console.error('当前浏览器不支持录音功能');
                 return Promise.reject(new Error('getUserMedia is not implemented in this browser'));
               }
               return new Promise(function(resolve, reject) {
@@ -38,18 +37,18 @@ export default class Recorder{
             switch (err.code || err.name) {  
                 case 'PERMISSION_DENIED':  
                 case 'PermissionDeniedError':  
-                    message.error('用户拒绝提供信息');  
+                    console.error('用户拒绝提供信息');  
                     break;  
                 case 'NOT_SUPPORTED_ERROR':  
                 case 'NotSupportedError':  
-                    message.error('浏览器不支持硬件设备');  
+                    console.error('浏览器不支持硬件设备');  
                     break;  
                 case 'MANDATORY_UNSATISFIED_ERROR':  
                 case 'MandatoryUnsatisfiedError':  
-                    message.error('无法发现指定的硬件设备');  
+                    console.error('无法发现指定的硬件设备');  
                     break;  
                 default:  
-                    message.error(`无法打开麦克风，异常信息: (${err.code || err.name})`);  
+                    console.error(`无法打开麦克风，异常信息: (${err.code || err.name})`);  
                     break;  
             }
         });

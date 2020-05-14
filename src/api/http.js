@@ -69,7 +69,6 @@ export default {
             signal
         });
         return _fetch(postFetch).then(res => {
-                    console.log(res);
                     if(res.ok && res.status===SuccessCode){
                         return res.json();
                     }else{

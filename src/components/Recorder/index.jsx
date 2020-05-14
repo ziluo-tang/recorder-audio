@@ -61,13 +61,19 @@ class Recorder extends Component{
         this.session && disconnect({
             server: this.server,
             session: this.session
-        }).then(() => {
-            this.setState({
-                status: 0,
-                audioReady: false,
-                recording: false
-            });
-            this.socket && this.socket.close();
+        }).then(res => {
+            if(res.errorCode==='SUCCESS'){
+                this.setState({
+                    status: 0,
+                    audioReady: false,
+                    recording: false
+                });
+                this.socket && this.socket.close();
+            }else{
+                message.error('断开连接失败');
+            }
+        }).catch(err => {
+            message.error(err);
         });
     }
     _socketOpen = () => {
